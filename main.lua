@@ -1,63 +1,117 @@
-	cursor = {}
-	cursor.x = 0
-	cursor.y = 0
+dist = "null"
+state = "start"
 
-	dist = "null"
+red = 255
+speed = 1.5
 
-	score = 0
-	speed = 10
+window = {}
+window.width = love.graphics.getWidth()
+window.height = love.graphics.getHeight()
 
-	window = {}
-	window.width = love.graphics.getWidth()
-	window.height = love.graphics.getHeight()
+score = {}
+score.value = 0
+score.x = window.width
+score.y = window.height
+score.alpha = 255
 
-	target = {}
-	target.x = window.width / 2
-	target.y = window.height / 2
-	target.radius = 100
+target = {}
+target.x = window.width / 2
+target.y = window.height / 2
+target.radius = 150
 
-function love.load()
+function isTouched(x1,y1, x2,y2)
+	dist =  ((x2-x1)^2+(y2-y1)^2)^0.5 
 
+	if dist < target.radius then
+		return true
+	else
+		return false
+	end
 end
 
-function getDist(x1,y1, x2,y2)
-	return ((x2-x1)^2+(y2-y1)^2)^0.5 
+function love.load()
+	font = love.graphics.newFont(30)
+	love.graphics.setFont(font)
 end
 
 function love.update(dt)
-	target.radius = (target.radius - speed*dt)
 
-	if target.radius <= 0 then
-		love.event.push("quit")
+	if state == "run" then
+		score.y = (score.y - 20*dt)
+		score.alpha = (score.alpha - 250*dt) 
+		target.radius = (target.radius - speed*dt)
+
+		if target.radius <= 0 then
+			state = "end"
+		end
+	elseif state == "end" then
+		red = (red - 500*dt)
+		if red <= 0 then
+			love.event.push("quit")
+		end
 	end
 end
 
 function love.mousepressed(x, y, button)
+
 	if button == 'l' then
-		dist = getDist(target.x, target.y, x, y)
 
-		cursor.x = x
-		cursor.y = y
+		if state == "start" then
+			state = "run"
+		elseif state == "run" then
 
-		if dist < target.radius then
-			score = score + 1
-			speed = speed + 5
+			if isTouched(target.x, target.y, x, y) then
+				--Target touched
+				score.value = score.value + 1
+				score.x = target.x
+				score.y = target.y
+				score.alpha = 255
 
-			target.radius = 100
-			target.x = love.math.random(0, window.width)
-			target.y = love.math.random(0, window.height)
-		else
-			love.event.push("quit")
+				speed = speed + 5
+
+				target.radius = 150
+				target.x = love.math.random(0, window.width)
+				target.y = love.math.random(0, window.height)
+			else
+				--Target missed
+				state = "end"
+			end
+		elseif state == "end" then
+
 		end
 	end	
 end	
 
 function love.draw()
-	love.graphics.print("score: "..score, 20, 20)
 
-	love.graphics.print("target: "..target.x..", "..target.y, 20, 30)
-	love.graphics.print("cursor: "..cursor.x..", "..cursor.y, 20, 40)
-	love.graphics.print("dist: "..dist, 20, 50)
+	if state == "start" then
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.circle(
+			"fill", target.x, target.y, target.radius, 100 )
 
-	love.graphics.circle( "fill", target.x, target.y, target.radius, 100 )
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.print(
+			"Click here", target.x - 75, target.y - 15)
+	elseif state == "run" then
+
+		if score.alpha > 0 then
+			love.graphics.setColor(255, 255, 255, score.alpha)
+			love.graphics.print(score.value, score.x, score.y)
+		end
+
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.circle(
+			"fill", target.x, target.y, target.radius, 100 )
+	elseif state == "end" then
+		love.graphics.setBackgroundColor(red, 0, 0)
+
+		if score.alpha > 0 then
+			love.graphics.setColor(255, 255, 255, score.alpha)
+			love.graphics.print(score.value, score.x, score.y)
+		end
+
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.circle(
+			"fill", target.x, target.y, target.radius, 100 )
+	end
 end
