@@ -57,13 +57,7 @@ function love.update(dt)
 			love.graphics.setBackgroundColor(0, 0, 0)
 		end
 	elseif state == "END_DISPLAY" then
-		alpha = 0
-
-		if alpha < 255 then
-			alpha = (alpha + 500*dt)
-		else
-			alpha = 255
-		end
+		alpha = 255
 
 		target.x = start.x
 		target.y = start.y
@@ -121,7 +115,7 @@ function love.draw()
 			"Click here", target.x - 75, target.y - 15)
 	elseif state == "RUN" then
 
-		if score.alpha > 0 then
+		if score.alpha > 0 and score.value > 0 then
 			love.graphics.setColor(255, 255, 255, score.alpha)
 			love.graphics.print(score.value, score.x, score.y)
 		end
