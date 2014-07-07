@@ -142,7 +142,7 @@ function love.draw()
 
 		love.graphics.setColor(0, 0, 0)
 		love.graphics.print(
-			"Missed", target.x - 50, target.y - 25)
+			"Score :", target.x - 50, target.y - 25)
 
 		if score.value < 10 then 
 			love.graphics.print(
